@@ -38,9 +38,17 @@ export function initNavigation(mapInstance, getBlockersFn, cancelReportFlowFn) {
   });
 }
 
+function setNavPanelActive(active) {
+  document.body.classList.toggle('nav-mode', active);
+  // Leaflet caches its container size; the split layout resizes #map via CSS,
+  // so it needs to be told to remeasure once the reflow has happened.
+  setTimeout(() => map.invalidateSize(), 0);
+}
+
 function resetNavState() {
   navMode = 'idle';
   startLatLng = null;
+  setNavPanelActive(false);
   if (startMarker) {
     map.removeLayer(startMarker);
     startMarker = null;
@@ -70,6 +78,7 @@ export function stopNavigation() {
 
 function startNavFlow() {
   cancelReportFlow();
+  setNavPanelActive(true);
   navPanel.classList.remove('hidden');
   navInstructions.innerHTML = '';
   navActionBtn.textContent = 'Cancel';
@@ -92,6 +101,7 @@ function startNavFlow() {
 
 export function startNavigationTo(destLatLng) {
   cancelReportFlow();
+  setNavPanelActive(true);
   navPanel.classList.remove('hidden');
   navInstructions.innerHTML = '';
   navActionBtn.textContent = 'Cancel';

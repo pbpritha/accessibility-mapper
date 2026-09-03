@@ -323,6 +323,28 @@ button {
   margin: 10px auto;
 }
 
+/* --- Split-screen navigation mode ---
+   While turn-by-turn is active, dock the map to the top half and the
+   nav panel to the bottom half instead of floating it as an overlay
+   sheet, so directions never cover the route on the map. */
+
+body.nav-mode #map {
+  bottom: 45vh;
+}
+
+body.nav-mode #nav-panel.sheet {
+  top: 55vh;
+  bottom: 0;
+  max-height: none;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+body.nav-mode #report-btn,
+body.nav-mode #bottom-nav,
+body.nav-mode #map-controls {
+  display: none;
+}
+
 .sheet-content {
   padding: 0 20px;
   text-align: left;
