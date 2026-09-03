@@ -6,48 +6,242 @@
     <title>Belfast Accessibility Mapper</title>
 
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#d7263d" />
+    <meta name="theme-color" content="#1B432C" />
     <link rel="icon" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AccessMap" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   </head>
   <body>
     <div id="map"></div>
 
-    <button id="report-btn" aria-label="Report a blocker">＋ Report</button>
-    <button id="nav-btn" aria-label="Navigate">🧭 Navigate</button>
+    <!-- Top app bar -->
+    <header id="app-bar">
+      <button id="menu-btn" class="icon-btn" aria-label="Menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div id="app-bar-brand">
+        <span class="material-symbols-outlined" id="brand-icon">explore</span>
+        <h1>Belfast Access Map</h1>
+      </div>
+      <button id="search-btn" class="icon-btn" aria-label="Search">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </header>
 
-    <div id="nav-panel" class="hidden">
-      <h2>Navigate</h2>
-      <p id="nav-status">Tap the map to set your starting point.</p>
-      <ol id="nav-instructions"></ol>
-      <div id="nav-actions">
-        <button id="nav-action-btn">Cancel</button>
+    <!-- Live badge + category filter chips, overlaying the map -->
+    <div id="map-hud">
+      <div id="live-badge">
+        <span class="live-dot"></span>
+        <span>LIVE ACCESSIBILITY &bull; BELFAST CIVIC</span>
+      </div>
+      <div id="filter-chips"></div>
+    </div>
+
+    <!-- Floating map utility controls -->
+    <div id="map-controls">
+      <button id="nav-btn" class="fab-round fab-primary" aria-label="Navigate">
+        <span class="material-symbols-outlined">directions</span>
+      </button>
+      <button id="recenter-btn" class="fab-round" aria-label="Recenter on my location">
+        <span class="material-symbols-outlined">my_location</span>
+      </button>
+      <div id="zoom-controls">
+        <button id="zoom-in-btn" aria-label="Zoom in">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+        <button id="zoom-out-btn" aria-label="Zoom out">
+          <span class="material-symbols-outlined">remove</span>
+        </button>
       </div>
     </div>
 
-    <div id="report-panel" class="hidden">
-      <h2>What did you find?</h2>
-      <p id="pin-hint">Drag the pin on the map to fine-tune the location.</p>
+    <!-- Primary report FAB -->
+    <button id="report-btn">
+      <span class="material-symbols-outlined">add_circle</span>
+      <span>Report Issue</span>
+    </button>
 
-      <div id="category-picker">
-        <button data-category="lift">🛗 Lift</button>
-        <button data-category="construction">🚧 Construction</button>
-        <button data-category="blocked_ramp">♿ Blocked Ramp</button>
-        <button data-category="blocked_pavement">⛔ Blocked Pavement</button>
-      </div>
+    <!-- Bottom navigation -->
+    <nav id="bottom-nav">
+      <button class="nav-tab active" data-tab="map">
+        <span class="material-symbols-outlined">explore</span>
+        <span>Map</span>
+      </button>
+      <button class="nav-tab" data-tab="alerts">
+        <span class="material-symbols-outlined">warning</span>
+        <span>Alerts</span>
+      </button>
+      <button class="nav-tab" data-tab="saved">
+        <span class="material-symbols-outlined">bookmark</span>
+        <span>Saved</span>
+      </button>
+      <button class="nav-tab" data-tab="profile">
+        <span class="material-symbols-outlined">person</span>
+        <span>Profile</span>
+      </button>
+    </nav>
 
-      <input type="file" id="photo-input" accept="image/*" capture="environment" />
+    <!-- Stub panel for Alerts/Saved/Profile tabs (no backing feature yet) -->
+    <div id="stub-panel" class="sheet hidden">
+      <div class="sheet-handle"></div>
+      <h2 id="stub-panel-title">Coming soon</h2>
+      <p id="stub-panel-body">This section isn't built yet.</p>
+      <button id="stub-panel-close" class="btn-primary">Back to Map</button>
+    </div>
 
-      <div id="report-actions">
-        <button id="cancel-btn">Cancel</button>
-        <button id="submit-btn" disabled>Submit</button>
+    <!-- Pin detail bottom sheet -->
+    <div id="pin-sheet" class="sheet hidden">
+      <div class="sheet-handle" id="pin-sheet-close"></div>
+      <div class="sheet-content">
+        <div class="pin-sheet-header">
+          <span id="pin-sheet-badge" class="category-badge"></span>
+          <button id="pin-sheet-close-btn" class="icon-btn" aria-label="Close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <p id="pin-sheet-time" class="muted"></p>
+        <img id="pin-sheet-photo" class="popup-photo hidden" alt="Report photo" />
+        <div class="pin-sheet-actions">
+          <button id="pin-sheet-route-btn" class="btn-primary">
+            <span class="material-symbols-outlined">alt_route</span>
+            <span>Find Safe Route</span>
+          </button>
+          <button id="pin-sheet-delete-btn" class="btn-secondary hidden">
+            <span class="material-symbols-outlined">delete</span>
+            <span>Delete My Report</span>
+          </button>
+          <button id="pin-sheet-resolve-btn" class="btn-secondary">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Mark Resolved</span>
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- Navigation panel -->
+    <div id="nav-panel" class="sheet hidden">
+      <div class="sheet-handle"></div>
+      <div class="sheet-content">
+        <h2>Navigate</h2>
+        <p id="nav-status">Tap the map to set your starting point.</p>
+        <div id="nav-summary" class="hidden">
+          <span id="nav-summary-badge" class="pill pill-primary">
+            <span class="material-symbols-outlined">alt_route</span>
+            Blocker-Avoiding Route
+          </span>
+          <span id="nav-summary-stats"></span>
+        </div>
+        <ol id="nav-instructions"></ol>
+        <div id="nav-actions">
+          <button id="nav-action-btn" class="btn-primary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-step report wizard -->
+    <div id="report-wizard" class="modal hidden">
+      <div class="wizard-sheet">
+        <div class="wizard-header">
+          <div>
+            <h2>Report Accessibility Obstacle</h2>
+            <div class="wizard-step-label">
+              <span class="live-dot small"></span>
+              <span id="wizard-step-text">Step 1 of 3: Location</span>
+            </div>
+          </div>
+          <button id="cancel-btn" class="icon-btn" aria-label="Close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="wizard-dots">
+          <span class="dot active" data-dot="1"></span>
+          <span class="dot" data-dot="2"></span>
+          <span class="dot" data-dot="3"></span>
+        </div>
+
+        <div class="wizard-body">
+          <!-- Step 1: Location -->
+          <section class="wizard-step active" data-step="1">
+            <p id="pin-hint" class="muted">
+              Getting your location&hellip;
+            </p>
+            <div id="location-summary" class="location-card hidden">
+              <span class="material-symbols-outlined">pin_drop</span>
+              <div>
+                <p class="location-title">Pin placed</p>
+                <p id="location-coords" class="muted"></p>
+              </div>
+            </div>
+            <p class="hint-note">
+              <span class="material-symbols-outlined">info</span>
+              Drag the pin on the map to fine-tune the location.
+            </p>
+          </section>
+
+          <!-- Step 2: Category -->
+          <section class="wizard-step" data-step="2">
+            <p class="muted">Select the primary obstruction type:</p>
+            <div id="category-picker"></div>
+          </section>
+
+          <!-- Step 3: Photo + review -->
+          <section class="wizard-step" data-step="3">
+            <p class="muted">Optional: add a photo for wheelchair users.</p>
+            <label id="photo-dropzone" for="photo-input">
+              <span class="material-symbols-outlined">add_a_photo</span>
+              <span class="photo-dropzone-title">Tap to capture or upload photo</span>
+              <span class="muted small">Helps evaluate wheelchair clearance</span>
+            </label>
+            <input type="file" id="photo-input" accept="image/*" capture="environment" class="hidden" />
+            <div id="report-summary" class="location-card">
+              <div>
+                <p class="location-title">Report Summary</p>
+                <p id="summary-category" class="muted"></p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="wizard-footer">
+          <button id="wizard-back-btn" class="btn-secondary hidden">Back</button>
+          <button id="submit-btn" class="btn-primary" disabled>
+            <span id="submit-btn-label">Continue</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success screen -->
+    <div id="success-panel" class="sheet hidden">
+      <div class="sheet-content">
+        <div class="success-check">
+          <span class="material-symbols-outlined">check</span>
+        </div>
+        <h2>Thank You! Belfast Map Updated</h2>
+        <p class="muted">Your report helps commuters navigating City Centre today.</p>
+        <div id="success-summary" class="location-card"></div>
+        <button id="success-return-btn" class="btn-primary">Return to Live Map</button>
+        <button id="success-again-btn" class="btn-secondary">Report Another Blocker</button>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
 
     <script type="module" src="/src/main.js"></script>
   </body>
