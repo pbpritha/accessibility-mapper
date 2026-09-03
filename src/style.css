@@ -38,6 +38,61 @@ html, body {
   display: none;
 }
 
+#nav-btn {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  padding: 16px 20px;
+  font-size: 18px;
+  border-radius: 999px;
+  border: none;
+  background: #1f6feb;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+#nav-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  background: white;
+  padding: 20px;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+}
+
+#nav-panel.hidden {
+  display: none;
+}
+
+#nav-instructions {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-left: 20px;
+  margin: 16px 0;
+}
+
+#nav-instructions li {
+  margin-bottom: 8px;
+}
+
+#nav-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#nav-action-btn {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background: #1f6feb;
+  color: white;
+}
+
 #category-picker {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -83,6 +138,24 @@ html, body {
 
 #submit-btn:disabled {
   background: #ccc;
+}
+
+.popup-photo {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: 6px;
+  border-radius: 6px;
+}
+
+.delete-report-btn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #d7263d;
+  background: white;
+  color: #d7263d;
 }
 
 .pin {

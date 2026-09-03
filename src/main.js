@@ -2,10 +2,34 @@ import L from 'leaflet';
 import './style.css';
 import { supabase } from './supabaseClient.js';
 import { CATEGORIES } from './categories.js';
+import { initNavigation, cancelNavigation } from './navigation.js';
 
 const BELFAST_CENTRE = [54.5973, -5.9301];
 
 const map = L.map('map').setView(BELFAST_CENTRE, 16);
+
+const reportsStore = [];
+const markersById = new Map();
+
+function getOwnReportIds() {
+  try {
+    return JSON.parse(localStorage.getItem('myReportIds') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function rememberOwnReport(id) {
+  const ids = getOwnReportIds();
+  if (!ids.includes(id)) {
+    ids.push(id);
+    localStorage.setItem('myReportIds', JSON.stringify(ids));
+  }
+}
+
+function forgetOwnReport(id) {
+  localStorage.setItem('myReportIds', JSON.stringify(getOwnReportIds().filter((existingId) => existingId !== id)));
+}
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors',
@@ -26,8 +50,44 @@ function addPinToMap(report) {
   const marker = L.marker([report.lat, report.lng], { icon: iconFor(report.category) }).addTo(map);
   const label = CATEGORIES[report.category]?.label ?? report.category;
   const when = new Date(report.created_at).toLocaleString();
-  const photo = report.photo_url ? `<br><img src="${report.photo_url}" style="max-width:200px" />` : '';
-  marker.bindPopup(`<strong>${label}</strong><br>${when}${photo}`);
+  const photo = report.photo_url ? `<br><img src="${report.photo_url}" class="popup-photo" />` : '';
+  const isOwn = getOwnReportIds().includes(report.id);
+  const deleteBtn = isOwn
+    ? `<br><button class="delete-report-btn" data-id="${report.id}">Delete my report</button>`
+    : '';
+  marker.bindPopup(`<strong>${label}</strong><br>${when}${photo}${deleteBtn}`, { maxWidth: 220 });
+
+  marker.on('popupopen', () => {
+    const popupEl = marker.getPopup().getElement();
+    const img = popupEl?.querySelector('img');
+    if (img && !img.complete) {
+      img.addEventListener('load', () => marker.getPopup().update());
+    }
+    const delBtn = popupEl?.querySelector('.delete-report-btn');
+    delBtn?.addEventListener('click', () => deleteReport(report.id));
+  });
+
+  markersById.set(report.id, marker);
+}
+
+function removePinFromMap(id) {
+  const marker = markersById.get(id);
+  if (marker) {
+    map.removeLayer(marker);
+    markersById.delete(id);
+  }
+  const idx = reportsStore.findIndex((r) => r.id === id);
+  if (idx !== -1) reportsStore.splice(idx, 1);
+}
+
+async function deleteReport(id) {
+  const { error } = await supabase.from('reports').delete().eq('id', id);
+  if (error) {
+    console.error('Failed to delete report', error);
+    return;
+  }
+  removePinFromMap(id);
+  forgetOwnReport(id);
 }
 
 async function loadExistingReports() {
@@ -36,16 +96,27 @@ async function loadExistingReports() {
     console.error('Failed to load reports', error);
     return;
   }
-  data.forEach(addPinToMap);
+  data.forEach((report) => {
+    reportsStore.push(report);
+    addPinToMap(report);
+  });
 }
 
-function subscribeToNewReports() {
+function subscribeToReportChanges() {
   supabase
     .channel('reports-changes')
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'reports' },
-      (payload) => addPinToMap(payload.new)
+      (payload) => {
+        reportsStore.push(payload.new);
+        addPinToMap(payload.new);
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'reports' },
+      (payload) => removePinFromMap(payload.old.id)
     )
     .subscribe();
 }
@@ -63,6 +134,7 @@ let draftMarker = null;
 let selectedCategory = null;
 
 function startReportFlow() {
+  cancelNavigation();
   reportPanel.classList.remove('hidden');
   selectedCategory = null;
   submitBtn.disabled = true;
@@ -128,9 +200,11 @@ async function submitReport() {
   const { lat, lng } = draftMarker.getLatLng();
   const photo_url = await uploadPhotoIfAny();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('reports')
-    .insert({ lat, lng, category: selectedCategory, photo_url });
+    .insert({ lat, lng, category: selectedCategory, photo_url })
+    .select()
+    .single();
 
   if (error) {
     console.error('Failed to submit report', error);
@@ -138,6 +212,7 @@ async function submitReport() {
     return;
   }
 
+  rememberOwnReport(data.id);
   cancelReportFlow();
 }
 
@@ -146,7 +221,8 @@ cancelBtn.addEventListener('click', cancelReportFlow);
 submitBtn.addEventListener('click', submitReport);
 
 loadExistingReports();
-subscribeToNewReports();
+subscribeToReportChanges();
+initNavigation(map, () => reportsStore, cancelReportFlow);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
