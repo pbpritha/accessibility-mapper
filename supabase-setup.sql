@@ -19,6 +19,14 @@ create policy "Anyone can insert reports"
   on reports for insert
   with check (true);
 
+-- No accounts/auth exist (see PRD Out of Scope), so "delete your own report" is enforced only
+-- client-side (the app only shows a Delete button for report IDs it remembers submitting, in
+-- localStorage). This policy allows any anonymous client to delete any row, consistent with the
+-- app's existing accepted-risk trust model (anyone can already insert/read anonymously).
+create policy "Anyone can delete reports"
+  on reports for delete
+  using (true);
+
 -- After running this:
 -- 1. Database -> Replication -> enable Realtime on the "reports" table.
 -- 2. Storage -> create a new PUBLIC bucket named "report-photos".

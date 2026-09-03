@@ -47,13 +47,14 @@ A wheelchair user in Belfast city centre who wants to plan a route before leavin
 - Seed/demo data pre-loaded on the map so it is not empty at first load.
 - Fallback to manual tap-to-place-pin if the user denies/lacks location permission.
 - Mobile browser support, usable while walking around outdoors.
+- One-shot turn-by-turn navigation to a tapped destination, routed to avoid currently reported blockers.
 
 ### 3.2 Out of Scope
 
 - User accounts / login of any kind.
 - Verification or moderation of crowd-sourced reports.
 - Push notifications or alerts.
-- Automatic route planning or turn-by-turn navigation that avoids reported blockers (blockers are shown on the map; the user routes around them manually). Automatic blocker-avoidance routing is a stated future enhancement.
+- Live GPS-tracked navigation with automatic re-routing while walking (navigation is a one-shot route calculated once at request time, not continuously updated).
 - Report expiry / auto-fade of old reports (reports remain visible indefinitely for MVP; staleness/trust handling is backlog).
 - Content moderation of photos or reports — accepted as an explicit MVP risk (see Section 7).
 - WCAG accessibility certification (app aims to be "reasonably usable"; full WCAG compliance is backlog).
@@ -123,6 +124,31 @@ A wheelchair user in Belfast city centre who wants to plan a route before leavin
 
 ---
 
+### 4.4 Navigate Around Reported Blockers
+
+**Description:** A user can tap a destination on the map and get a route from their current (or tapped) location that avoids currently reported blockers, along with a list of turn-by-turn instructions.
+
+**Requirement ref:** FR-04
+
+**Priority:** Should Have
+
+**Acceptance Criteria:**
+
+- [ ] The user can start navigation from the map view.
+- [ ] The app attempts to use device GPS for the starting point; if denied, the user taps the map to set a starting point, then taps again to set the destination.
+- [ ] The destination is set by tapping the map (no search/address lookup).
+- [ ] The calculated route avoids currently reported blockers where a viable path exists.
+- [ ] A list of turn-by-turn instructions with distances is shown alongside the route line on the map.
+- [ ] If no route can be found avoiding blockers, the app automatically retries without avoidance and clearly warns the user the route may cross a reported blocker.
+- [ ] If no route can be found at all, the user sees a clear message and can tap a different destination without restarting the whole flow.
+- [ ] The route is calculated once per request and does not automatically update as the user moves or as new reports come in (one-shot, not live-tracked) — this is documented, expected behaviour, not a bug.
+
+**Usability Criteria:**
+
+- [ ] A user can start navigation and get a route in two taps or fewer beyond the initial "Navigate" button press (assuming GPS is available).
+
+---
+
 ## 5. Non-Functional Requirements
 
 | ID | Category | Requirement | Acceptance criterion |
@@ -138,7 +164,7 @@ A wheelchair user in Belfast city centre who wants to plan a route before leavin
 ## 6. Constraints
 
 - **Timeline:** 3 hours total for build, deployment, and demo.
-- **Stack:** Leaflet (map rendering) + Supabase (Postgres + Realtime for live sync) + Vercel (deployment).
+- **Stack:** Leaflet (map rendering) + Supabase (Postgres + Realtime for live sync) + OpenRouteService Directions API (routing) + Vercel (deployment).
 - **Team size/skill:** Small hackathon team; no time budgeted for custom backend infrastructure beyond Supabase's managed services.
 - **No budget for paid map tile/geocoding services** — use free tiles (e.g., OpenStreetMap via Leaflet).
 
@@ -155,6 +181,7 @@ A wheelchair user in Belfast city centre who wants to plan a route before leavin
 - Supabase (Postgres database + Realtime subscriptions) as the backend.
 - Leaflet + free OpenStreetMap tiles for map rendering.
 - Browser Geolocation API for GPS-based pin placement.
+- OpenRouteService Directions API (free tier) for blocker-avoiding pedestrian routing (FR-04).
 
 **Data sensitivity:**
 
