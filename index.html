@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Belfast Accessibility Mapper</title>
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#d7263d" />
+    <link rel="icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AccessMap" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <button id="report-btn" aria-label="Report a blocker">＋ Report</button>
+
+    <div id="report-panel" class="hidden">
+      <h2>What did you find?</h2>
+      <p id="pin-hint">Drag the pin on the map to fine-tune the location.</p>
+
+      <div id="category-picker">
+        <button data-category="lift">🛗 Lift</button>
+        <button data-category="construction">🚧 Construction</button>
+        <button data-category="blocked_ramp">♿ Blocked Ramp</button>
+        <button data-category="blocked_pavement">⛔ Blocked Pavement</button>
+      </div>
+
+      <input type="file" id="photo-input" accept="image/*" capture="environment" />
+
+      <div id="report-actions">
+        <button id="cancel-btn">Cancel</button>
+        <button id="submit-btn" disabled>Submit</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

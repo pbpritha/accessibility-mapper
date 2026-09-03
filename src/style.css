@@ -1,0 +1,104 @@
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+}
+
+#report-btn {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  padding: 16px 20px;
+  font-size: 18px;
+  border-radius: 999px;
+  border: none;
+  background: #d7263d;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+#report-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  background: white;
+  padding: 20px;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+}
+
+#report-panel.hidden {
+  display: none;
+}
+
+#category-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+#category-picker button {
+  padding: 16px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 2px solid #ccc;
+  background: white;
+}
+
+#category-picker button.selected {
+  border-color: #d7263d;
+  background: #ffe9ec;
+}
+
+#photo-input {
+  width: 100%;
+  margin: 12px 0;
+}
+
+#report-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+#report-actions button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+#submit-btn {
+  background: #d7263d;
+  color: white;
+}
+
+#submit-btn:disabled {
+  background: #ccc;
+}
+
+.pin {
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.pin-emoji {
+  display: inline-block;
+  transform: rotate(45deg);
+  font-size: 16px;
+}
+
