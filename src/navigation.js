@@ -7,7 +7,7 @@ let map = null;
 let getBlockers = () => [];
 let cancelReportFlow = () => {};
 
-let navBtn, navPanel, navStatus, navInstructions, navActionBtn;
+let navBtn, navPanel, navStatus, navInstructions, navActionBtn, navSummary, navSummaryStats;
 
 let navMode = 'idle'; // 'idle' | 'awaiting-start' | 'awaiting-destination' | 'routed'
 let startLatLng = null;
@@ -25,6 +25,8 @@ export function initNavigation(mapInstance, getBlockersFn, cancelReportFlowFn) {
   navStatus = document.getElementById('nav-status');
   navInstructions = document.getElementById('nav-instructions');
   navActionBtn = document.getElementById('nav-action-btn');
+  navSummary = document.getElementById('nav-summary');
+  navSummaryStats = document.getElementById('nav-summary-stats');
 
   navBtn.addEventListener('click', startNavFlow);
   navActionBtn.addEventListener('click', () => {
@@ -53,6 +55,7 @@ function resetNavState() {
   }
   navInstructions.innerHTML = '';
   navActionBtn.textContent = 'Cancel';
+  navSummary.classList.add('hidden');
   navPanel.classList.add('hidden');
 }
 
@@ -70,6 +73,7 @@ function startNavFlow() {
   navPanel.classList.remove('hidden');
   navInstructions.innerHTML = '';
   navActionBtn.textContent = 'Cancel';
+  navSummary.classList.add('hidden');
 
   if (navigator.geolocation) {
     navStatus.textContent = 'Getting your location…';
@@ -83,6 +87,36 @@ function startNavFlow() {
     );
   } else {
     armStartTap();
+  }
+}
+
+export function startNavigationTo(destLatLng) {
+  cancelReportFlow();
+  navPanel.classList.remove('hidden');
+  navInstructions.innerHTML = '';
+  navActionBtn.textContent = 'Cancel';
+  navSummary.classList.add('hidden');
+
+  if (destMarker) map.removeLayer(destMarker);
+  destMarker = L.marker(destLatLng).addTo(map);
+
+  if (navigator.geolocation) {
+    navStatus.textContent = 'Getting your location…';
+    navMode = 'awaiting-start';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        startLatLng = [pos.coords.latitude, pos.coords.longitude];
+        calculateRoute(startLatLng, destLatLng);
+      },
+      () => {
+        navMode = 'awaiting-start';
+        navStatus.textContent = 'Tap the map to set your starting point.';
+        map.once('click', (e) => {
+          startLatLng = [e.latlng.lat, e.latlng.lng];
+          calculateRoute(startLatLng, destLatLng);
+        });
+      }
+    );
   }
 }
 
@@ -155,16 +189,42 @@ function drawRoute(feature) {
     routeLine = null;
   }
   const latlngs = feature.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-  routeLine = L.polyline(latlngs, { color: '#1f6feb', weight: 5 }).addTo(map);
+  routeLine = L.polyline(latlngs, { color: '#1B432C', weight: 5 }).addTo(map);
+
+  const summary = feature.properties.summary;
+  if (summary) {
+    const km = (summary.distance / 1000).toFixed(1);
+    const mins = Math.round(summary.duration / 60);
+    navSummaryStats.textContent = `${km} km • ${mins} min walk`;
+    navSummary.classList.remove('hidden');
+  }
 
   navInstructions.innerHTML = '';
   const steps = feature.properties.segments.flatMap((s) => s.steps);
-  steps.forEach((step) => {
+  steps.forEach((step, i) => {
     const li = document.createElement('li');
+    li.className = 'nav-step';
     const road = step.name && step.name !== '-' && !step.instruction.includes(step.name)
       ? ` on ${step.name}`
       : '';
-    li.textContent = `${step.instruction}${road}, ${Math.round(step.distance)}m`;
+
+    const badge = document.createElement('span');
+    badge.className = 'nav-step-badge';
+    badge.textContent = String(i + 1);
+
+    const body = document.createElement('div');
+    body.className = 'nav-step-body';
+    const text = document.createElement('p');
+    text.className = 'nav-step-text';
+    text.textContent = `${step.instruction}${road}`;
+    const dist = document.createElement('p');
+    dist.className = 'nav-step-distance';
+    dist.textContent = `${Math.round(step.distance)}m`;
+    body.appendChild(text);
+    body.appendChild(dist);
+
+    li.appendChild(badge);
+    li.appendChild(body);
     navInstructions.appendChild(li);
   });
 }
