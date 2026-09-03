@@ -19,6 +19,13 @@ There is no lint or test tooling configured in this project — don't assume `np
 
 Before `npm run dev` will work, Supabase must be set up (see README.md): run [supabase-setup.sql](supabase-setup.sql) in the Supabase SQL editor, enable Realtime on the `reports` table, create the public `report-photos` Storage bucket, and populate `.env` (copy from `.env.example`) with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 
+Supabase has repeatedly moved the dashboard location for enabling Realtime on a table (it is no longer under Database → Replication, which is now Pipelines/CDC-only). Don't chase the UI — run this in the SQL Editor instead, it's stable regardless of dashboard changes:
+```sql
+alter publication supabase_realtime add table reports;
+```
+
+**Never commit `.env` or paste real Supabase keys/URLs into commits, PRs, or this file.** It's already gitignored — keep it that way. The anon key is safe to expose *client-side in the deployed app* (that's how Supabase's public-anon-key model works, access control is enforced by RLS policies, not by hiding the key), but it should still never land in git history or docs. When setting the same vars in Vercel, use the Vercel project's environment variable settings, not a checked-in file.
+
 ## Architecture
 
 There is no application backend. This is a static frontend (Vite + vanilla JS + Leaflet) that talks directly from the browser to Supabase using the public anon key — Postgres is the data store, Supabase Realtime pushes live updates, and Supabase Storage holds uploaded photos. Access control is enforced entirely through Postgres RLS policies (anonymous read + insert on `reports`), not application code, because there is no auth/accounts in this app (see PRD Out of Scope).

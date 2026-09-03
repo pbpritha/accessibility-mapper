@@ -6,7 +6,11 @@ Crowd-sourced, real-time map of accessibility blockers (lifts, ramps, pavements)
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In the Supabase SQL editor, run [`supabase-setup.sql`](supabase-setup.sql). It creates the `reports` table, RLS policies, and seed data.
-3. In Supabase: **Database → Replication** → enable Realtime on `reports`.
+3. Enable Realtime on `reports`. Supabase's dashboard location for this has moved before and may move again — the reliable way is to run this in the SQL Editor:
+   ```sql
+   alter publication supabase_realtime add table reports;
+   ```
+   (As of writing, the UI equivalent is **Database → Publications** → `supabase_realtime` → toggle on `reports`. **Database → Replication** is now for Pipelines/CDC, not this.)
 4. In Supabase: **Storage** → create a public bucket named `report-photos`, with anonymous upload + read allowed.
 5. Copy `.env.example` to `.env` and fill in your project's URL and anon key (Supabase dashboard → Project Settings → API).
 6. Install and run:
