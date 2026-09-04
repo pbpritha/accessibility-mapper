@@ -148,10 +148,27 @@
         </div>
         <ol id="nav-instructions"></ol>
         <div id="nav-actions">
+          <button id="nav-start-btn" class="btn-primary hidden">
+            <span class="material-symbols-outlined">navigation</span>
+            <span>Start</span>
+          </button>
           <button id="nav-action-btn" class="btn-primary">Cancel</button>
         </div>
       </div>
     </div>
+
+    <!-- Live turn-by-turn banner, shown only once guidance has started -->
+    <div id="nav-live-banner" class="hidden">
+      <span id="nav-live-icon" class="material-symbols-outlined">straight</span>
+      <div id="nav-live-banner-text">
+        <p id="nav-live-distance"></p>
+        <p id="nav-live-instruction"></p>
+      </div>
+    </div>
+
+    <button id="nav-recenter-btn" class="fab-round hidden" aria-label="Recenter on my location">
+      <span class="material-symbols-outlined">navigation</span>
+    </button>
 
     <!-- 3-step report wizard -->
     <div id="report-wizard" class="modal hidden">

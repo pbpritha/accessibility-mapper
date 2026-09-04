@@ -182,8 +182,7 @@ Insert 5-10 rows directly into `reports` via the Supabase SQL editor before the 
 - No auth/accounts, no login screens. "Delete your own report" is therefore enforced only client-side (localStorage tracks which report IDs this browser submitted); the DB itself allows any anonymous client to delete any row.
 - No moderation queue or content filtering on photos.
 - No push notifications.
-- No live GPS tracking or automatic re-routing during navigation — routes are calculated once (one-shot) via GraphHopper (FR-04).
-- No route recalculation when new reports arrive mid-navigation — the user must stop and restart navigation to pick up new blockers.
+- No map rotation/compass-up view or spoken (voice) turn-by-turn during live guidance (FR-04) — guidance is visual only, north-up.
 - No geocoding/address search for destinations — destination is set by tapping the map only.
 - No report expiry logic.
 - No automated test suite — manual two-device verification only (per NFR-01).
