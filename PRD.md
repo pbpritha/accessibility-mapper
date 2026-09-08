@@ -141,7 +141,8 @@ A wheelchair user in Belfast city centre who wants to plan a route before leavin
 - [ ] A list of turn-by-turn instructions with distances is shown alongside the route line on the map.
 - [ ] If no route can be found avoiding blockers, the app automatically retries without avoidance and clearly warns the user the route may cross a reported blocker.
 - [ ] If no route can be found at all, the user sees a clear message and can tap a different destination without restarting the whole flow.
-- [ ] The route is calculated once per request and does not automatically update as the user moves or as new reports come in (one-shot, not live-tracked) — this is documented, expected behaviour, not a bug.
+- [ ] After previewing a route, the user can tap "Start" to enter live guidance: the map follows their GPS position and a banner shows the current maneuver and live distance to it.
+- [ ] During live guidance, the route automatically recalculates if the user strays off the route or a new blocker report lands on the remaining path.
 
 **Usability Criteria:**
 

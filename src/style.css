@@ -345,6 +345,97 @@ body.nav-mode #map-controls {
   display: none;
 }
 
+/* --- Live turn-by-turn guidance ---
+   Once the user taps Start, go full-immersion: hide the chrome that
+   floats over the map (app bar, live badge/filters) and replace it with
+   a Google Maps-style maneuver banner docked to the top of the map half. */
+
+body.nav-live #app-bar,
+body.nav-live #map-hud {
+  display: none;
+}
+
+#nav-live-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+#nav-live-icon {
+  flex: none;
+  font-size: 34px;
+}
+
+#nav-live-banner-text {
+  min-width: 0;
+}
+
+#nav-live-distance {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+#nav-live-instruction {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#nav-recenter-btn {
+  position: absolute;
+  right: 12px;
+  z-index: 1002;
+}
+
+body.nav-live #nav-recenter-btn {
+  top: calc(45vh - 60px);
+}
+
+.nav-step.active {
+  background: var(--color-surface-container);
+  border-radius: var(--radius-button);
+  margin: 0 -10px;
+  padding: 10px;
+}
+
+.nav-user-puck {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1A73E8;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.35);
+}
+
+.nav-user-puck.has-heading::after {
+  content: '';
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid #1A73E8;
+  transform: translateX(-50%) rotate(var(--nav-heading, 0deg));
+  transform-origin: 50% 17px;
+}
+
 .sheet-content {
   padding: 0 20px;
   text-align: left;
